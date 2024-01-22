@@ -1,0 +1,12 @@
+{
+  "name": "cai-or-code-backend",
+  "version": "1.0.0",
+  "description": "new cai or backend api project",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Md Abu Huraira",
+  "license": "ISC"
+}
