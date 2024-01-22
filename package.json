@@ -1,16 +1,21 @@
 {
-  "name": "cai-or-code-backend",
-  "version": "1.0.0",
-  "description": "new cai or backend api project",
-  "main": "index.js",
-  "type": "module",
-  "scripts": {
-    "dev": "nodemon src/index.js"
-  },
-  "author": "Md Abu Huraira",
-  "license": "ISC",
-  "devDependencies": {
-    "nodemon": "^3.0.3",
-    "prettier": "^3.2.4"
-  }
+   "name": "cai-or-code-backend",
+   "version": "1.0.0",
+   "description": "new cai or backend api project",
+   "main": "index.js",
+   "type": "commonjs",
+   "scripts": {
+      "dev": "nodemon ./src/index.js"
+   },
+   "author": "Md Abu Huraira",
+   "license": "ISC",
+   "devDependencies": {
+      "nodemon": "^3.0.3",
+      "prettier": "^3.2.4"
+   },
+   "dependencies": {
+      "dotenv": "^16.3.2",
+      "express": "^4.18.2",
+      "mongoose": "^8.1.0"
+   }
 }
