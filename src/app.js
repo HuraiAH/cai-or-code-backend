@@ -1,4 +1,4 @@
-// const cookieParser= require("express").cookieParser()
+const cookieParser = require("cookie-parser");
 const express = require("express");
 const app = express();
 // uses express custom middleware
@@ -6,6 +6,6 @@ const app = express();
 app.use(express.json({ limit: "16kb" }));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static("public"));
-// app.use(cookieParser)
+app.use(cookieParser());
 
 module.exports = app;
