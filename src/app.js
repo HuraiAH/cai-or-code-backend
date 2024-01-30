@@ -18,6 +18,6 @@ app.use(cookieParser());
 // import router
 const userRouter = require("./routes/user.router.js");
 // use router
-app.use("/user", userRouter);
+app.use("/api/v1/users", userRouter);
 
 module.exports = app;

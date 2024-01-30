@@ -1,5 +1,4 @@
 const router = require("express").Router();
 const { registerUser, findUser } = require("../controllers/user.controller.js");
-router.post("/register", registerUser);
-router.get("/register", findUser);
+router.route("/register").post(registerUser).get(findUser);
 module.exports = router;

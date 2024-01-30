@@ -40,12 +40,12 @@ let userSchema = new Schema(
       refreshToken: {
          type: String,
       },
-      watchHistory: [
-         {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "Video",
-         },
-      ],
+      // watchHistory: [
+      //    {
+      //       type: mongoose.Schema.Types.ObjectId,
+      //       ref: "Video",
+      //    },
+      // ],
    },
    { timestamps: true }
 );

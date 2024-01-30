@@ -2,7 +2,7 @@ const asyncHandler = require("../utils/asyncHandler.js");
 const User = require("../models/user.model.js");
 
 // register new user
-exports.registerUser = async (req, res) => {
+exports.registerUser = asyncHandler(async (req, res) => {
    try {
       let {
          UserName,
@@ -31,7 +31,7 @@ exports.registerUser = async (req, res) => {
    } catch (error) {
       console.log("user dose not save in database", error.massage);
    }
-};
+});
 exports.findUser = async (req, res) => {
    try {
       let user = await User.find();
