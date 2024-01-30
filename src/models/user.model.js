@@ -4,7 +4,7 @@ const JWT = require("jsonwebtoken");
 // define user schema
 let userSchema = new Schema(
    {
-      UserName: {
+      userName: {
          type: String,
          required: [true, "UserName is required!"],
          unique: true,
