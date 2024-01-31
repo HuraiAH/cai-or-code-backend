@@ -2,8 +2,9 @@ const asyncHandler = require("../utils/asyncHandler.js");
 const User = require("../models/user.model.js");
 const apiError = require("../utils/apiError.js");
 const uploadCloudinary = require("../utils/cloudinary.js");
-const apiResponse = require("../utils/apiResponce.js");
-
+const apiResponse = require("../utils/apiResponse.js");
+const JWT = require("jsonwebtoken");
+// user register controller
 exports.registerUser = asyncHandler(async (req, res) => {
    // get user details on postman
    // validation check - (not empty)
@@ -81,7 +82,49 @@ exports.registerUser = asyncHandler(async (req, res) => {
       console.log("please debug your code!");
    }
 });
+// user login controller
+exports.loginUser = asyncHandler(async (req, res) => {
+   // req body -> data
+   // username or email
+   //find the user
+   //password check
+   //access and referesh token
+   //send cookie
 
+   // req body -> data
+   const { userName, email, password } = req.body;
+
+   // check  username or email exist
+   const user = await User.find({
+      $or: [{ userName }, { email }],
+   });
+   if (!user) {
+      throw new apiError(401, "user dose not exist");
+   }
+   //password check
+   const isPasswordValid = await user.isPasswordCorrect(password);
+   if (!isPasswordValid) {
+      throw new apiError(401, "please provide a correct password");
+   }
+   //access and referesh token
+   const { accessToken, refreshToken } = await generateAccessAndRefereshTokens(
+      user._id
+   );
+   const loggedInUser = await User.findById(user._id).select(
+      "-password -refreshToken"
+   );
+   return res
+      .status(200)
+      .cookie("accessToken", accessToken, options)
+      .cookie("refreshToken", refreshToken, options)
+      .json(
+         new apiResponse(
+            200,
+            { user: loggedInUser, refreshToken, accessToken },
+            "user login successfully"
+         )
+      );
+});
 exports.findUsers = asyncHandler(async (req, res) => {
    const user = await User.find();
    res.status(200).json(user);

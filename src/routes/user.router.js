@@ -3,7 +3,9 @@ const upload = require("../middelwares//multer.middleware.js");
 const {
    registerUser,
    findUsers,
+   loginUser,
 } = require("../controllers/user.controller.js");
+// user register router
 router
    .route("/register")
    .post(
@@ -14,5 +16,7 @@ router
       registerUser
    )
    .get(findUsers);
+//user login router
+router.route("/login").post(loginUser);
 
 module.exports = router;
