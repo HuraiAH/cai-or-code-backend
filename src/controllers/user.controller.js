@@ -34,7 +34,17 @@ exports.registerUser = asyncHandler(async (req, res) => {
    }
    // check for image , check for avatar
    const avatarLocalPath = req.files?.avatar[0]?.path;
-   const coverImageLocalPath = req.files?.coverImage[0]?.path;
+   // const coverImageLocalPath = req.files?.coverImage[0]?.path;
+   let coverImageLocalPath;
+   if (
+      req.files &&
+      Array.isArray(req.files.coverImage) &&
+      req.files.coverImage.length > 0
+   ) {
+      coverImageLocalPath = req.files.coverImage[0].path;
+   } else {
+      console.log("dose not save image");
+   }
    if (!avatarLocalPath) {
       throw new apiError(307, "profile image is must be required");
    }
@@ -42,7 +52,7 @@ exports.registerUser = asyncHandler(async (req, res) => {
    const avatar = await uploadCloudinary(avatarLocalPath);
    const coverImage = await uploadCloudinary(coverImageLocalPath);
    if (!avatar) {
-      throw new apiError(307, "profile image is must be required");
+      throw new apiError(307, "cloud profile image is must be required");
    }
    // create user object , entry in database
    const user = await User.create({
@@ -70,4 +80,9 @@ exports.registerUser = asyncHandler(async (req, res) => {
    } catch (error) {
       console.log("please debug your code!");
    }
+});
+
+exports.findUsers = asyncHandler(async (req, res) => {
+   const user = await User.find();
+   res.status(200).json(user);
 });

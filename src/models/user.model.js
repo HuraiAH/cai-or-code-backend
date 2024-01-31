@@ -31,7 +31,7 @@ let userSchema = new Schema(
          required: [true, "avatar is required!"],
       },
       coverImage: {
-         type: String, // cloudinary  url
+         type: String, //cloudinary  url
       },
       password: {
          type: String,

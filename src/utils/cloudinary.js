@@ -1,23 +1,26 @@
 const { v2 } = require("cloudinary");
 const fs = require("fs");
-cloudinary.config({
+v2.config({
    cloud_name: process.env.cloud_name,
    api_key: process.env.api_key,
    api_secret: process.env.api_secret,
 });
 
 // create cloudinary file upload method
-const uploadCloudinary = async (localFilePath) => {
+const uploadOnCloudinary = async (localFilePath) => {
    try {
-      if (!localFilePathocalFilePath) return null;
-      let uploadResponse = await v2.uploader.upload(localFilePath, {
+      if (!localFilePath) return null;
+      //upload the file on cloudinary
+      const response = await v2.uploader.upload(localFilePath, {
          resource_type: "auto",
       });
-      console.log(`file uploaded successfully ${uploadResponse.url}`);
-      return uploadResponse;
+      // file has been uploaded successfull
+      //console.log("file is uploaded on cloudinary ", response.url);
+      fs.unlinkSync(localFilePath);
+      return response;
    } catch (error) {
       fs.unlinkSync(localFilePath); // remove the locally saved temporary file as the file upload got failed
       return null;
    }
 };
-module.exports = uploadCloudinary;
+module.exports = uploadOnCloudinary;
