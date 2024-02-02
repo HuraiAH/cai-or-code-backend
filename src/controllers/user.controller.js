@@ -4,6 +4,30 @@ const apiError = require("../utils/apiError.js");
 const uploadCloudinary = require("../utils/cloudinary.js");
 const apiResponse = require("../utils/apiResponse.js");
 const JWT = require("jsonwebtoken");
+const mongoose = require("mongoose");
+const bcrypt = require("bcrypt");
+
+// Add a method to compare passwords
+
+// //generateAccessAndRefreshTokens function
+// const generateAccessAndRefreshTokens = async (userId) => {
+//    try {
+//       const user = await User.findById(userId);
+//       const accessToken = user.generateAccessToken();
+//       const refreshToken = user.generateRefreshToken();
+
+//       user.refreshToken = refreshToken;
+//       await user.save({ validateBeforeSave: false });
+
+//       return { accessToken, refreshToken };
+//    } catch (error) {
+//       throw new apiError(
+//          500,
+//          "Something went wrong while generating refresh and access token"
+//       );
+//    }
+// };
+
 // user register controller
 exports.registerUser = asyncHandler(async (req, res) => {
    // get user details on postman
@@ -28,13 +52,14 @@ exports.registerUser = asyncHandler(async (req, res) => {
    }
    // check if user already exist - (userName,email)
    const existedUser = await User.findOne({
-      $or: [{ userName, email }],
+      $or: [{ userName }, { email }],
    });
    if (existedUser) {
       throw new apiError(403, "this user already existed!");
    }
    // check for image , check for avatar
    const avatarLocalPath = req.files?.avatar[0]?.path;
+   console.log(req.files);
    // const coverImageLocalPath = req.files?.coverImage[0]?.path;
    let coverImageLocalPath;
    if (
@@ -43,13 +68,12 @@ exports.registerUser = asyncHandler(async (req, res) => {
       req.files.coverImage.length > 0
    ) {
       coverImageLocalPath = req.files.coverImage[0].path;
-   } else {
-      console.log("dose not save image");
    }
+
    if (!avatarLocalPath) {
       throw new apiError(307, "profile image is must be required");
    }
-   // upload them cloudinary avtar
+   // upload them cloudinary avatar
    const avatar = await uploadCloudinary(avatarLocalPath);
    const coverImage = await uploadCloudinary(coverImageLocalPath);
    if (!avatar) {
@@ -76,19 +100,14 @@ exports.registerUser = asyncHandler(async (req, res) => {
    res.status(200).json(
       new apiResponse(200, createdUser, "user register successfully!")
    );
-
-   try {
-   } catch (error) {
-      console.log("please debug your code!");
-   }
 });
-// user login controller
+// // user login controller
 exports.loginUser = asyncHandler(async (req, res) => {
    // req body -> data
    // username or email
    //find the user
    //password check
-   //access and referesh token
+   //access and refresh token
    //send cookie
 
    // req body -> data
@@ -101,13 +120,15 @@ exports.loginUser = asyncHandler(async (req, res) => {
    if (!user) {
       throw new apiError(401, "user dose not exist");
    }
+
    //password check
    const isPasswordValid = await user.isPasswordCorrect(password);
+
    if (!isPasswordValid) {
       throw new apiError(401, "please provide a correct password");
    }
-   //access and referesh token
-   const { accessToken, refreshToken } = await generateAccessAndRefereshTokens(
+   //access and refresh token
+   const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(
       user._id
    );
    const loggedInUser = await User.findById(user._id).select(

@@ -1,6 +1,7 @@
 const { Schema, model, mongoose } = require("mongoose");
 const bcrypt = require("bcrypt");
 const JWT = require("jsonwebtoken");
+
 // define user schema
 let userSchema = new Schema(
    {
@@ -57,12 +58,9 @@ userSchema.pre("save", async function (next) {
    next();
 });
 // Add a method to compare passwords
-userSchema.methods.comparePassword = async function (candidatePassword) {
-   try {
-      return await bcrypt.compare(candidatePassword, this.password);
-   } catch (error) {
-      throw error;
-   }
+
+userSchema.methods.isPasswordCorrect = async function (password) {
+   return await bcrypt.compare(password, this.password);
 };
 // generate access token
 userSchema.methods.generateAccessToken = function () {
