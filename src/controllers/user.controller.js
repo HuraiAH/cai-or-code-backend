@@ -3,14 +3,8 @@ const User = require("../models/user.model.js");
 const apiError = require("../utils/apiError.js");
 const uploadCloudinary = require("../utils/cloudinary.js");
 const apiResponse = require("../utils/apiResponse.js");
-const JWT = require("jsonwebtoken");
-const mongoose = require("mongoose");
-const bcrypt = require("bcrypt");
-
-// Add a method to compare passwords
-
-// //generateAccessAndRefreshTokens function
-// const generateAccessAndRefreshTokens = async (userId) => {
+// //generate Access And Refresh Tokens function
+// const generateAccessAndRefreshTokens = async function (userId) {
 //    try {
 //       const user = await User.findById(userId);
 //       const accessToken = user.generateAccessToken();
@@ -59,8 +53,9 @@ exports.registerUser = asyncHandler(async (req, res) => {
    }
    // check for image , check for avatar
    const avatarLocalPath = req.files?.avatar[0]?.path;
-   console.log(req.files);
+   // console.log(req.files);
    // const coverImageLocalPath = req.files?.coverImage[0]?.path;
+   // alternative
    let coverImageLocalPath;
    if (
       req.files &&
@@ -105,46 +100,90 @@ exports.registerUser = asyncHandler(async (req, res) => {
 exports.loginUser = asyncHandler(async (req, res) => {
    // req body -> data
    // username or email
-   //find the user
-   //password check
-   //access and refresh token
-   //send cookie
+   // find the user
+   // password check
+   // access and referesh token
+   // send cookie
 
-   // req body -> data
-   const { userName, email, password } = req.body;
+   const { email, userName, password } = req.body;
 
-   // check  username or email exist
-   const user = await User.find({
+   if (!userName || !email) {
+      throw new apiError(400, "username or email is required ");
+   }
+
+   // Here is an alternative of above code based on logic discussed in video:
+   // if (!(username || email)) {
+   //     throw new ApiError(400, "username or email is required")
+
+   // }
+
+   const user = await User.findOne({
       $or: [{ userName }, { email }],
    });
+   // console.log(user);
+   // throw new apiError("", "error found bujla");
    if (!user) {
-      throw new apiError(401, "user dose not exist");
+      throw new apiError(404, "User does not exist");
    }
 
-   //password check
-   const isPasswordValid = await user.isPasswordCorrect(password);
+   // const isPasswordValid = await user.isPasswordCorrect(password);
+   const isPasswordCorrect = await user.isPasswordCorrect(password);
 
-   if (!isPasswordValid) {
-      throw new apiError(401, "please provide a correct password");
+   if (!isPasswordCorrect) {
+      throw new apiError(401, "Invalid user password");
    }
-   //access and refresh token
-   const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(
-      user._id
-   );
+   //access and referesh token
+   // const { refreshToken, accessToken } = await generateAccessAndRefreshTokens(
+   //    user._id
+   // );
+   const accessToken = user.generateAccessToken();
+   const refreshToken = user.generateRefreshToken();
+
+   user.refreshToken = refreshToken;
+   await user.save({ validateBeforeSave: false });
+
    const loggedInUser = await User.findById(user._id).select(
       "-password -refreshToken"
    );
-   return res
-      .status(200)
-      .cookie("accessToken", accessToken, options)
-      .cookie("refreshToken", refreshToken, options)
-      .json(
-         new apiResponse(
-            200,
-            { user: loggedInUser, refreshToken, accessToken },
-            "user login successfully"
+
+   const options = {
+      httpOnly: true,
+      secure: true,
+   };
+
+   return (
+      res
+         .status(200)
+         // .cookie("accessToken", accessToken, options)
+         // .cookie("refreshToken", refreshToken, options)
+         .json(
+            new apiResponse(
+               200,
+               {
+                  loggedInUser,
+               },
+               "User logged In Successfully"
+            )
          )
+   );
+});
+exports.updateUserName = asyncHandler(async (req, res) => {
+   // find a user
+   //req body data
+   // replace old data and set new data
+   try {
+      let { userName, userId } = req.body;
+      const updateData = await User.findByIdAndUpdate(
+         { _id: userId },
+         { $set: { userName } },
+         { new: true }
       );
+      res.status(200).json(
+         new apiResponse("", updateData, "data updated successfully")
+      );
+   } catch (error) {
+      console.log("user name update not successfully", error.message);
+   }
 });
 exports.findUsers = asyncHandler(async (req, res) => {
    const user = await User.find();

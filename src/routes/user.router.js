@@ -4,6 +4,7 @@ const {
    registerUser,
    findUsers,
    loginUser,
+   updateUserName,
 } = require("../controllers/user.controller.js");
 // user register router
 router
@@ -18,5 +19,6 @@ router
    .get(findUsers);
 //user login router
 router.route("/login").post(loginUser);
+router.route("/").put(updateUserName);
 
 module.exports = router;
