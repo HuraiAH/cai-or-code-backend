@@ -3,24 +3,24 @@ const User = require("../models/user.model.js");
 const apiError = require("../utils/apiError.js");
 const uploadCloudinary = require("../utils/cloudinary.js");
 const apiResponse = require("../utils/apiResponse.js");
-// //generate Access And Refresh Tokens function
-// const generateAccessAndRefreshTokens = async function (userId) {
-//    try {
-//       const user = await User.findById(userId);
-//       const accessToken = user.generateAccessToken();
-//       const refreshToken = user.generateRefreshToken();
+//generate Access And Refresh Tokens function
+const generateAccessAndRefreshTokens = async function (userId) {
+   try {
+      const user = await User.findById(userId);
+      const accessToken = user.generateAccessToken();
+      const refreshToken = user.generateRefreshToken();
 
-//       user.refreshToken = refreshToken;
-//       await user.save({ validateBeforeSave: false });
+      user.refreshToken = refreshToken;
+      await user.save({ validateBeforeSave: false });
 
-//       return { accessToken, refreshToken };
-//    } catch (error) {
-//       throw new apiError(
-//          500,
-//          "Something went wrong while generating refresh and access token"
-//       );
-//    }
-// };
+      return { accessToken, refreshToken };
+   } catch (error) {
+      throw new apiError(
+         500,
+         "Something went wrong while generating refresh and access token"
+      );
+   }
+};
 
 // user register controller
 exports.registerUser = asyncHandler(async (req, res) => {
@@ -133,14 +133,14 @@ exports.loginUser = asyncHandler(async (req, res) => {
       throw new apiError(401, "Invalid user password");
    }
    //access and referesh token
-   // const { refreshToken, accessToken } = await generateAccessAndRefreshTokens(
-   //    user._id
-   // );
-   const accessToken = user.generateAccessToken();
-   const refreshToken = user.generateRefreshToken();
+   const { refreshToken, accessToken } = await generateAccessAndRefreshTokens(
+      user._id
+   );
+   // const accessToken = user.generateAccessToken();
+   // const refreshToken = user.generateRefreshToken();
 
-   user.refreshToken = refreshToken;
-   await user.save({ validateBeforeSave: false });
+   // user.refreshToken = refreshToken;
+   // await user.save({ validateBeforeSave: false });
 
    const loggedInUser = await User.findById(user._id).select(
       "-password -refreshToken"
@@ -151,38 +151,47 @@ exports.loginUser = asyncHandler(async (req, res) => {
       secure: true,
    };
 
-   return (
-      res
-         .status(200)
-         // .cookie("accessToken", accessToken, options)
-         // .cookie("refreshToken", refreshToken, options)
-         .json(
-            new apiResponse(
-               200,
-               {
-                  loggedInUser,
-               },
-               "User logged In Successfully"
-            )
+   return res
+      .status(200)
+      .cookie("accessToken", accessToken, options)
+      .cookie("refreshToken", refreshToken, options)
+      .json(
+         new apiResponse(
+            200,
+            {
+               loggedInUser,
+            },
+            "User logged In Successfully"
          )
-   );
+      );
 });
 exports.updateUserName = asyncHandler(async (req, res) => {
-   // find a user
-   //req body data
-   // replace old data and set new data
    try {
-      let { userName, userId } = req.body;
-      const updateData = await User.findByIdAndUpdate(
-         { _id: userId },
-         { $set: { userName } },
+      // Destructure data from the request body
+      const { userName, email } = req.body;
+      let id = req.params;
+
+      // Update user's username
+      const user = await User.findByIdAndUpdate(
+         { _id: id },
+         { $set: { userName, email } },
          { new: true }
-      );
+      ).select("-password");
+
+      if (!user) {
+         // Handle the case when the user with the given userId is not found
+         return res
+            .status(404)
+            .json(new apiResponse("User not found", null, "User not found"));
+      }
+
+      // Send a successful response
       res.status(200).json(
-         new apiResponse("", updateData, "data updated successfully")
+         new apiResponse("", user, "Username updated successfully")
       );
    } catch (error) {
-      console.log("user name update not successfully", error.message);
+      // Handle errors
+      console.error("Username update not successful:", error.message);
    }
 });
 exports.findUsers = asyncHandler(async (req, res) => {
