@@ -5,8 +5,10 @@ const {
    findUsers,
    loginUser,
    updateUserName,
+   logoutUser,
 } = require("../controllers/user.controller.js");
-// user register router
+const { verifyJwt } = require("../middelwares/auth.middelware.js");
+
 router.route("/register").post(
    upload.fields([
       { name: "coverImage", maxCount: 1 },
@@ -14,9 +16,11 @@ router.route("/register").post(
    ]),
    registerUser
 );
-//user login router
 router.route("/login").post(loginUser);
 router.route("/:id").put(updateUserName);
 router.route("/").get(findUsers);
+
+// secret route
+router.route("/logout").post(verifyJwt, logoutUser);
 
 module.exports = router;

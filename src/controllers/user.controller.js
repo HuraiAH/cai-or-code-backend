@@ -169,16 +169,17 @@ exports.updateUserName = asyncHandler(async (req, res) => {
    try {
       // Destructure data from the request body
       const { userName, email } = req.body;
-      let id = req.params;
-
+      let { id } = req.params;
+      // // find user from full name
+      // const { Name } = await User.findOne({ fullName });
       // Update user's username
-      const user = await User.findByIdAndUpdate(
+      const UpdatedUser = await User.findByIdAndUpdate(
          { _id: id },
          { $set: { userName, email } },
          { new: true }
       ).select("-password");
 
-      if (!user) {
+      if (!UpdatedUser) {
          // Handle the case when the user with the given userId is not found
          return res
             .status(404)
@@ -187,12 +188,31 @@ exports.updateUserName = asyncHandler(async (req, res) => {
 
       // Send a successful response
       res.status(200).json(
-         new apiResponse("", user, "Username updated successfully")
+         new apiResponse(UpdatedUser, "Username updated successfully")
       );
    } catch (error) {
       // Handle errors
-      console.error("Username update not successful:", error.message);
+      new apiError(500, "user update not successfully!");
    }
+});
+// log out controller
+exports.logoutUser = asyncHandler(async (req, res) => {
+   await User.findByIdAndUpdate(
+      req.user?._id,
+      {
+         $set: { refreshToken: undefined },
+      },
+      { new: true }
+   );
+
+   const options = {
+      httpOnly: true,
+      secure: true,
+   };
+   res.status(200)
+      .clearCookie("accessToken", options)
+      .clearCookie("refreshToken", options)
+      .json(new apiResponse(200, "user log out successfully!"));
 });
 exports.findUsers = asyncHandler(async (req, res) => {
    const user = await User.find();
