@@ -200,7 +200,7 @@ exports.logoutUser = asyncHandler(async (req, res) => {
    await User.findByIdAndUpdate(
       req.user?._id,
       {
-         $set: { refreshToken: undefined },
+         $set: { refreshToken: null },
       },
       { new: true }
    );
@@ -214,7 +214,62 @@ exports.logoutUser = asyncHandler(async (req, res) => {
       .clearCookie("refreshToken", options)
       .json(new apiResponse(200, "user log out successfully!"));
 });
-exports.findUsers = asyncHandler(async (req, res) => {
-   const user = await User.find();
-   res.status(200).json(user);
+exports.getCurrentUser = asyncHandler(async (req, res) => {
+   res.status(200).json(
+      new apiResponse(200, req.user, "successfully finding current user")
+   );
+});
+exports.changeCurrentPassword = asyncHandler(async (req, res) => {
+   const { oldPassword, newPassword } = req.body;
+
+   const user = await User.findById(req.user?._id);
+   const isPasswordCorrect = await user.isPasswordCorrect(oldPassword);
+
+   if (!isPasswordCorrect) {
+      throw new apiError(400, "Invalid old password");
+   }
+
+   user.password = newPassword;
+   await user.save({ validateBeforeSave: false });
+
+   return res
+      .status(200)
+      .json(new apiResponse(200, {}, "Password changed successfully"));
+});
+exports.updateUserAvatar = asyncHandler(async (req, res) => {
+   const avatarLocalPath = req.files?.avatar[0]?.path;
+
+   if (!avatarLocalPath) {
+      throw new apiError(400, "Avatar file is missing");
+   }
+
+   // Retrieve the old avatar URL before updating
+   const userToUpdate = await User.findById(req.user?._id);
+   const oldAvatarUrl = userToUpdate.avatar;
+
+   // Delete the old avatar image
+   if (oldAvatarUrl) {
+      const publicId = cloudinary.url(oldAvatarUrl).public_id;
+      await deleteFromCloudinary(publicId);
+   }
+
+   const avatar = await uploadCloudinary(avatarLocalPath);
+
+   if (!avatar.url) {
+      throw new apiError(400, "Error while uploading the avatar");
+   }
+
+   const user = await User.findByIdAndUpdate(
+      req.user?._id,
+      {
+         $set: {
+            avatar: avatar.url,
+         },
+      },
+      { new: true }
+   ).select("-password");
+
+   return res
+      .status(200)
+      .json(new ApiResponse(200, user, "Avatar image updated successfully"));
 });

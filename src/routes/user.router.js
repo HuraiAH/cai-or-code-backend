@@ -2,10 +2,12 @@ const router = require("express").Router();
 const upload = require("../middelwares//multer.middleware.js");
 const {
    registerUser,
-   findUsers,
+   getCurrentUser,
    loginUser,
    updateUserName,
    logoutUser,
+   changeCurrentPassword,
+   updateUserAvatar,
 } = require("../controllers/user.controller.js");
 const { verifyJwt } = require("../middelwares/auth.middelware.js");
 
@@ -18,7 +20,9 @@ router.route("/register").post(
 );
 router.route("/login").post(loginUser);
 router.route("/:id").put(updateUserName);
-router.route("/").get(findUsers);
+router.route("/").get(getCurrentUser);
+router.route("/change-password").post(verifyJwt, changeCurrentPassword);
+router.route("/change-avatar").post(verifyJwt, updateUserAvatar);
 
 // secret route
 router.route("/logout").post(verifyJwt, logoutUser);
