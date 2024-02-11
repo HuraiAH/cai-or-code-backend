@@ -20,10 +20,12 @@ router.route("/register").post(
    registerUser
 );
 router.route("/login").post(loginUser);
-router.route("/:id").put(updateUserName);
+router.route("/u/:id").patch(updateUserName);
 router.route("/getUser").get(getCurrentUser);
 router.route("/change-password").post(verifyJwt, changeCurrentPassword);
-router.route("/change-avatar").post(verifyJwt, updateUserAvatar);
+router
+   .route("/change-avatar")
+   .patch(verifyJwt, upload.single("avatar"), updateUserAvatar);
 
 // secret route
 router.route("/logout").post(verifyJwt, logoutUser);

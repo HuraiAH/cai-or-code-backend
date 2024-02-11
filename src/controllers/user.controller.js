@@ -245,9 +245,7 @@ exports.changeCurrentPassword = asyncHandler(async (req, res) => {
       .json(new apiResponse(200, {}, "Password changed successfully"));
 });
 exports.updateUserAvatar = asyncHandler(async (req, res) => {
-   const avatarLocalPath = req.body.file?.path;
-   console.log(avatarLocalPath);
-
+   const avatarLocalPath = req.file?.path;
    if (!avatarLocalPath) {
       throw new apiError(400, "Avatar file is missing");
    }
@@ -280,7 +278,7 @@ exports.updateUserAvatar = asyncHandler(async (req, res) => {
 
    return res
       .status(200)
-      .json(new ApiResponse(200, user, "Avatar image updated successfully"));
+      .json(new apiResponse(200, user, "Avatar image updated successfully"));
 });
 exports.refreshAccessToken = asyncHandler(async (req, res) => {
    //incomingRefreshToken  from req.cookies
