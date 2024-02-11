@@ -26,7 +26,7 @@ const uploadOnCloudinary = async (localFilePath) => {
 const deleteFromCloudinary = async (publicId) => {
    try {
       // Use the destroy method to delete the image by public ID
-      const result = await cloudinary.uploader.destroy(publicId);
+      const result = await v2.uploader.destroy(publicId);
 
       // Check if the image was deleted successfully
       if (result.result === "ok") {
@@ -42,4 +42,4 @@ const deleteFromCloudinary = async (publicId) => {
       // Handle the error as needed
    }
 };
-(module.exports = uploadOnCloudinary), deleteFromCloudinary;
+module.exports = { uploadOnCloudinary, deleteFromCloudinary };

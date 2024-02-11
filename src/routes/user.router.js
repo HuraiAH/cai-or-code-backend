@@ -8,6 +8,7 @@ const {
    logoutUser,
    changeCurrentPassword,
    updateUserAvatar,
+   refreshAccessToken,
 } = require("../controllers/user.controller.js");
 const { verifyJwt } = require("../middelwares/auth.middelware.js");
 
@@ -20,11 +21,12 @@ router.route("/register").post(
 );
 router.route("/login").post(loginUser);
 router.route("/:id").put(updateUserName);
-router.route("/").get(getCurrentUser);
+router.route("/getUser").get(getCurrentUser);
 router.route("/change-password").post(verifyJwt, changeCurrentPassword);
 router.route("/change-avatar").post(verifyJwt, updateUserAvatar);
 
 // secret route
 router.route("/logout").post(verifyJwt, logoutUser);
+router.route("/refreshAccessToken").post(refreshAccessToken);
 
 module.exports = router;

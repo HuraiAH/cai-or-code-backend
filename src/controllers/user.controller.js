@@ -1,7 +1,13 @@
 const asyncHandler = require("../utils/asyncHandler.js");
 const User = require("../models/user.model.js");
 const apiError = require("../utils/apiError.js");
-const uploadCloudinary = require("../utils/cloudinary.js");
+const { v2 } = require("cloudinary");
+const { verify } = require("jsonwebtoken");
+
+const {
+   uploadOnCloudinary,
+   deleteFromCloudinary,
+} = require("../utils/cloudinary.js");
 const apiResponse = require("../utils/apiResponse.js");
 //generate Access And Refresh Tokens function
 const generateAccessAndRefreshTokens = async function (userId) {
@@ -69,8 +75,8 @@ exports.registerUser = asyncHandler(async (req, res) => {
       throw new apiError(307, "profile image is must be required");
    }
    // upload them cloudinary avatar
-   const avatar = await uploadCloudinary(avatarLocalPath);
-   const coverImage = await uploadCloudinary(coverImageLocalPath);
+   const avatar = await uploadOnCloudinary(avatarLocalPath);
+   const coverImage = await uploadOnCloudinary(coverImageLocalPath);
    if (!avatar) {
       throw new apiError(307, "cloud profile image is must be required");
    }
@@ -168,14 +174,14 @@ exports.loginUser = asyncHandler(async (req, res) => {
 exports.updateUserName = asyncHandler(async (req, res) => {
    try {
       // Destructure data from the request body
-      const { userName, email } = req.body;
+      const { userName, email, fullName } = req.body;
       let { id } = req.params;
       // // find user from full name
       // const { Name } = await User.findOne({ fullName });
       // Update user's username
       const UpdatedUser = await User.findByIdAndUpdate(
          { _id: id },
-         { $set: { userName, email } },
+         { $set: { userName, email, fullName } },
          { new: true }
       ).select("-password");
 
@@ -200,7 +206,9 @@ exports.logoutUser = asyncHandler(async (req, res) => {
    await User.findByIdAndUpdate(
       req.user?._id,
       {
-         $set: { refreshToken: null },
+         $unset: {
+            refreshToken: 1,
+         },
       },
       { new: true }
    );
@@ -237,7 +245,8 @@ exports.changeCurrentPassword = asyncHandler(async (req, res) => {
       .json(new apiResponse(200, {}, "Password changed successfully"));
 });
 exports.updateUserAvatar = asyncHandler(async (req, res) => {
-   const avatarLocalPath = req.files?.avatar[0]?.path;
+   const avatarLocalPath = req.body.file?.path;
+   console.log(avatarLocalPath);
 
    if (!avatarLocalPath) {
       throw new apiError(400, "Avatar file is missing");
@@ -249,11 +258,11 @@ exports.updateUserAvatar = asyncHandler(async (req, res) => {
 
    // Delete the old avatar image
    if (oldAvatarUrl) {
-      const publicId = cloudinary.url(oldAvatarUrl).public_id;
+      const publicId = v2.url(oldAvatarUrl).public_id;
       await deleteFromCloudinary(publicId);
    }
 
-   const avatar = await uploadCloudinary(avatarLocalPath);
+   const avatar = await uploadOnCloudinary(avatarLocalPath);
 
    if (!avatar.url) {
       throw new apiError(400, "Error while uploading the avatar");
@@ -272,4 +281,36 @@ exports.updateUserAvatar = asyncHandler(async (req, res) => {
    return res
       .status(200)
       .json(new ApiResponse(200, user, "Avatar image updated successfully"));
+});
+exports.refreshAccessToken = asyncHandler(async (req, res) => {
+   //incomingRefreshToken  from req.cookies
+   // decodedToken in incomingRefreshToken
+   //find user form decodedToken
+   // generate  new access and refresh token
+
+   const incomingRefreshToken =
+      req.cookies?.refreshToken || req.body.refreshToken;
+   if (!incomingRefreshToken) {
+      throw (new apiError(403), "unauthorized request");
+   }
+
+   const decodedToken = verify(
+      incomingRefreshToken,
+      process.env.Refresh_token_secret_key
+   );
+   const user = await User.findById(decodedToken?._id);
+   if (!user) {
+      throw (new apiError(403), "invalid refresh token");
+   }
+   const options = {
+      httpOnly: true,
+      secure: true,
+   };
+   const { refreshToken, accessToken } = await generateAccessAndRefreshTokens(
+      user._id
+   );
+   res.status(200)
+      .cookie("refreshToken", refreshToken, options)
+      .cookie("accessToken", accessToken, options)
+      .json(new apiResponse(200, {}, "regenerate access and refresh token"));
 });
