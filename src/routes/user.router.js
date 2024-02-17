@@ -1,5 +1,5 @@
 const router = require("express").Router();
-const upload = require("../middelwares//multer.middleware.js");
+const upload = require("../middlewares/multer.middleware.js");
 const {
    registerUser,
    getCurrentUser,
@@ -10,7 +10,7 @@ const {
    updateUserAvatar,
    refreshAccessToken,
 } = require("../controllers/user.controller.js");
-const { verifyJwt } = require("../middelwares/auth.middelware.js");
+const { verifyJwt } = require("../middlewares/auth.middleware.js");
 
 router.route("/register").post(
    upload.fields([

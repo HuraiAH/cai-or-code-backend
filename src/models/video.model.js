@@ -1,12 +1,11 @@
 const { Schema, model, mongoose } = require("mongoose");
-const mongoose_aggregate_paginate = require("mongoose-aggregate-paginate-v2");
 
 const videoSchema = new Schema(
    {
       videoFile: {
          type: String, // cloudinary url
          required: [true, "video must be required!"],
-         unique: true,
+         // unique: true,
       },
       thumbnail: {
          type: String, // cloudinary url
@@ -18,7 +17,7 @@ const videoSchema = new Schema(
       },
 
       description: {
-         type: string,
+         type: String,
       },
       duration: {
          type: Number,
