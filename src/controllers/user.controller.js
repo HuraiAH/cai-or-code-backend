@@ -1,14 +1,13 @@
 const asyncHandler = require("../utils/asyncHandler.js");
 const User = require("../models/user.model.js");
 const apiError = require("../utils/apiError.js");
+const apiResponse = require("../utils/apiResponse.js");
 const { v2 } = require("cloudinary");
 const { verify } = require("jsonwebtoken");
-
 const {
    uploadOnCloudinary,
    deleteFromCloudinary,
 } = require("../utils/cloudinary.js");
-const apiResponse = require("../utils/apiResponse.js");
 //generate Access And Refresh Tokens function
 const generateAccessAndRefreshTokens = async function (userId) {
    try {
@@ -311,4 +310,138 @@ exports.refreshAccessToken = asyncHandler(async (req, res) => {
       .cookie("refreshToken", refreshToken, options)
       .cookie("accessToken", accessToken, options)
       .json(new apiResponse(200, {}, "regenerate access and refresh token"));
+});
+
+exports.getUserChannelProfile = asyncHandler(async (req, res) => {
+   /*
+   const channel = await User.aggregate([
+      {
+         $match: {
+            username: username?.toLowerCase(),
+         },
+      },
+      {
+         $lookup: {
+            from: "subscriptions",
+            localField: "_id",
+            foreignField: "channel",
+            as: "subscribers",
+         },
+      },
+      {
+         $lookup: {
+            from: "subscriptions",
+            localField: "_id",
+            foreignField: "subscriber",
+            as: "subscribedTo",
+         },
+      },
+      {
+         $addFields: {
+            subscribersCount: {
+               $size: "$subscribers",
+            },
+            channelsSubscribedToCount: {
+               $size: "$subscribedTo",
+            },
+            isSubscribed: {
+               $cond: {
+                  if: { $in: [req.user?._id, "$subscribers.subscriber"] },
+                  then: true,
+                  else: false,
+               },
+            },
+         },
+      },
+      {
+         $project: {
+            fullName: 1,
+            username: 1,
+            subscribersCount: 1,
+            channelsSubscribedToCount: 1,
+            isSubscribed: 1,
+            avatar: 1,
+            coverImage: 1,
+            email: 1,
+         },
+      },
+   ]);
+
+
+            fullName: 1,
+            username: 1,
+            subscribersCount: 1,
+            channelsSubscribedToCount: 1,
+            isSubscribed: 1,
+            avatar: 1,
+            coverImage: 1,
+            email: 1,
+  */
+
+   const { userName } = req.params;
+
+   if (!userName?.trim()) {
+      throw new apiError(400, "username is missing");
+   }
+   const channel = await User.aggregate([
+      {
+         $match: {
+            userName: userName?.toLowerCase(),
+         },
+      },
+      {
+         $lookup: {
+            from: "subscriptions",
+            localField: "_id",
+            foreignField: "channel",
+            as: "subscribers",
+         },
+      },
+      {
+         $lookup: {
+            from: "subscriptions",
+            localField: "_id",
+            foreignField: "subscriber",
+            as: "subscribedTo",
+         },
+      },
+      {
+         $addFields: {
+            subscribersCount: {
+               $size: "$subscribers",
+            },
+            channelsSubscribedToCount: {
+               $size: "$subscribedTo",
+            },
+            isSubscribed: {
+               $cond: {
+                  if: { $in: [req.user?._id, "$subscribers.subscriber"] },
+                  then: true,
+                  else: false,
+               },
+            },
+         },
+      },
+      {
+         $project: {
+            avatar: 1,
+            fullName: 1,
+            userName: 1,
+            coverImage: 1,
+            isSubscribed: 1,
+            subscribersCount: 1,
+            channelsSubscribedToCount: 1,
+         },
+      },
+   ]);
+
+   if (!channel?.length) {
+      throw new apiError(404, "channel does not exists");
+   }
+
+   return res
+      .status(200)
+      .json(
+         new apiResponse(200, channel[0], "User channel fetched successfully")
+      );
 });

@@ -18,8 +18,10 @@ app.use(cookieParser());
 // import router
 const userRouter = require("./routes/user.router.js");
 const videoRouter = require("./routes/video.route.js");
+const subscriptionRouter = require("./routes/Subscription.route.js");
 // use router
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/videos", videoRouter);
+app.use("/api/v1/videos", subscriptionRouter);
 
 module.exports = app;

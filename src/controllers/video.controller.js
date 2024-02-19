@@ -7,7 +7,7 @@ const apiResponse = require("../utils/apiResponse.js");
 
 exports.createVideo = asyncHandler(async (req, res) => {
    // extract user input data from req body
-   const { title, description } = req.body;
+   const { title, description, duration } = req.body;
 
    // validate title and description
    if (!title || !description) {
@@ -31,9 +31,11 @@ exports.createVideo = asyncHandler(async (req, res) => {
    try {
       // upload video local path cloudinary
       const videoPath = await uploadOnCloudinary(videoLocalPath);
+
       // create and save video details
       const video = new Video({
          title,
+         duration,
          description,
          videoFile: videoPath?.url || "",
          thumbnail: videoPath?.url || "",

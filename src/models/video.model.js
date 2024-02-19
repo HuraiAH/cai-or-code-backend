@@ -22,13 +22,13 @@ const videoSchema = new Schema(
       duration: {
          type: Number,
       },
-      views: {
-         type: Number,
-         default: 0,
-      },
+      // views: {
+      //    type: Number,
+      //    default: 0,
+      // },
       isPublish: {
          type: Boolean,
-         default: 0,
+         default: false,
       },
       owner: {
          type: mongoose.Types.ObjectId,
