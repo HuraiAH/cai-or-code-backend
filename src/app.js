@@ -20,6 +20,7 @@ const userRouter = require("./routes/user.router.js");
 const videoRouter = require("./routes/video.route.js");
 const subscriptionRouter = require("./routes/Subscription.route.js");
 const playlistRouter = require("./routes/playlist.route.js");
+const likeRouter = require("./routes/like.route.js");
 const notFound = require("./routes/notFound.route.js");
 
 // use router
@@ -27,6 +28,7 @@ app.use("/api/v1/users", userRouter);
 app.use("/api/v1/videos", videoRouter);
 app.use("/api/v1/videos", subscriptionRouter);
 app.use("/api/v1", playlistRouter);
+app.use("/api/v1", likeRouter);
 
 // not found router
 app.use("", notFound);
