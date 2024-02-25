@@ -429,6 +429,7 @@ exports.getUserChannelProfile = asyncHandler(async (req, res) => {
             userName: 1,
             coverImage: 1,
             isSubscribed: 1,
+            watchHistory: 1,
             subscribersCount: 1,
             channelsSubscribedToCount: 1,
          },

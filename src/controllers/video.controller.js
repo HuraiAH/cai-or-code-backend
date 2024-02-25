@@ -1,9 +1,10 @@
 const Video = require("../models/video.model.js");
-const User = require("../models/user.model.js");
 const asyncHandler = require("../utils/asyncHandler.js");
 const apiError = require("../utils/apiError.js");
 const { uploadOnCloudinary } = require("../utils/cloudinary.js");
 const apiResponse = require("../utils/apiResponse.js");
+const { isValidObjectId } = require("mongoose");
+const User = require("../models/user.model.js");
 
 exports.createVideo = asyncHandler(async (req, res) => {
    // extract user input data from req body
@@ -49,4 +50,46 @@ exports.createVideo = asyncHandler(async (req, res) => {
    } catch (error) {
       throw new apiError(500, "Internal Server Error", error.message);
    }
+});
+/*
+exports.addViewerToVideo = asyncHandler(async (req, res) => {
+   const { videoId } = req.params;
+   const { userId } = req?.user._id;
+   if (!isValidObjectId(videoId, userId)) {
+      throw new apiError(402, "invalid userId and videoId");
+   }
+
+   const video = await Video.findById(videoId);
+   if (!video) {
+      throw new apiError(406, "video dose not exist ");
+   }
+   video.viewer.push(userId);
+
+   await video.save();
+   res.status(200).json(new apiResponse(200, "viewer added in this video"));
+});
+*/
+exports.getVideo = asyncHandler(async (req, res) => {
+   const { videoId } = req.params;
+   const userId = req.user?._id;
+   if (!isValidObjectId(videoId)) {
+      throw new apiError(402, "invalid userId and videoId");
+   }
+
+   const video = await Video.findById(videoId);
+   if (!video) {
+      throw new apiError(406, "video dose not exist ");
+   }
+
+   res.status(200).json(new apiResponse(200, video, " video fetched"));
+
+   video.viewer.push(userId);
+   await video.save();
+
+   const watchHistory = await User.findByIdAndUpdate(req.user?._id, {
+      $push: {
+         watchHistory: videoId,
+      },
+   });
+   await watchHistory.save();
 });

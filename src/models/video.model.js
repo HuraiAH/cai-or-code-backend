@@ -22,10 +22,8 @@ const videoSchema = new Schema(
       duration: {
          type: Number,
       },
-      // views: {
-      //    type: Number,
-      //    default: 0,
-      // },
+      viewer: [{ type: Schema.Types.ObjectId, ref: "User" }],
+
       isPublish: {
          type: Boolean,
          default: false,
