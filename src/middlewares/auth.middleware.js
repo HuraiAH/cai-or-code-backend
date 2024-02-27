@@ -24,6 +24,6 @@ exports.verifyJwt = asyncHandler(async (req, res, next) => {
       req.user = user;
       next();
    } catch (error) {
-      throw new apiError(402, "invalid access token from!");
+      throw new apiError(402, "invalid access token !");
    }
 });

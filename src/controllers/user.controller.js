@@ -33,7 +33,7 @@ exports.registerUser = asyncHandler(async (req, res) => {
    // validation check - (not empty)
    // check if user already exist - (userName,email)
    // check for image , check for avatar
-   // upload them cloudinary avtar
+   // upload them cloudinary avatar
    // create user object , entry in database
    // remove password and refresh token filed from response
    // check for user creation
@@ -57,7 +57,15 @@ exports.registerUser = asyncHandler(async (req, res) => {
       throw new apiError(403, "this user already existed!");
    }
    // check for image , check for avatar
-   const avatarLocalPath = req.files?.avatar[0]?.path;
+   let avatarLocalPath;
+   if (
+      req.files &&
+      Array.isArray(req.files.avatar) &&
+      req.files.avatar.length > 0
+   ) {
+      avatarLocalPath = req.files.avatar[0].path;
+   }
+
    // console.log(req.files);
    // const coverImageLocalPath = req.files?.coverImage[0]?.path;
    // alternative
@@ -147,9 +155,7 @@ exports.loginUser = asyncHandler(async (req, res) => {
    // user.refreshToken = refreshToken;
    // await user.save({ validateBeforeSave: false });
 
-   const loggedInUser = await User.findById(user._id).select(
-      "-password -refreshToken"
-   );
+   await User.findById(user._id);
 
    const options = {
       httpOnly: true,
@@ -160,15 +166,7 @@ exports.loginUser = asyncHandler(async (req, res) => {
       .status(200)
       .cookie("accessToken", accessToken, options)
       .cookie("refreshToken", refreshToken, options)
-      .json(
-         new apiResponse(
-            200,
-            {
-               loggedInUser,
-            },
-            "User logged In Successfully"
-         )
-      );
+      .json(new apiResponse(200, "User logged In Successfully"));
 });
 exports.updateUserName = asyncHandler(async (req, res) => {
    try {

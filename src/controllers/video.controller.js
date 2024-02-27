@@ -41,9 +41,10 @@ exports.createVideo = asyncHandler(async (req, res) => {
          videoFile: videoPath?.url || "",
          thumbnail: videoPath?.url || "",
          owner: req.user?._id,
+         isPublish: true,
       });
-      const videoDetails = await video.save();
 
+      const videoDetails = await video.save();
       return res.json(
          new apiResponse(200, videoDetails, "video upload successfully")
       );
@@ -51,45 +52,40 @@ exports.createVideo = asyncHandler(async (req, res) => {
       throw new apiError(500, "Internal Server Error", error.message);
    }
 });
-/*
-exports.addViewerToVideo = asyncHandler(async (req, res) => {
-   const { videoId } = req.params;
-   const { userId } = req?.user._id;
-   if (!isValidObjectId(videoId, userId)) {
-      throw new apiError(402, "invalid userId and videoId");
-   }
 
-   const video = await Video.findById(videoId);
-   if (!video) {
-      throw new apiError(406, "video dose not exist ");
-   }
-   video.viewer.push(userId);
-
-   await video.save();
-   res.status(200).json(new apiResponse(200, "viewer added in this video"));
-});
-*/
 exports.getVideo = asyncHandler(async (req, res) => {
+   // Extract videoId from request parameters
    const { videoId } = req.params;
+
+   // Extract userId from the authenticated user (if available)
    const userId = req.user?._id;
+
+   // Validate if videoId is a valid ObjectId
    if (!isValidObjectId(videoId)) {
-      throw new apiError(402, "invalid userId and videoId");
+      throw new apiError(402, "Invalid userId and videoId");
    }
 
+   // Find the video by ID
    const video = await Video.findById(videoId);
+
+   // Check if the video exists
    if (!video) {
-      throw new apiError(406, "video dose not exist ");
+      throw new apiError(406, "Video does not exist");
    }
 
-   res.status(200).json(new apiResponse(200, video, " video fetched"));
-
-   video.viewer.push(userId);
+   // Increment the views count for the video
+   video.views += 1;
    await video.save();
 
-   const watchHistory = await User.findByIdAndUpdate(req.user?._id, {
-      $push: {
+   // Respond with the video details
+   res.status(200).json(new apiResponse(200, video, "Video fetched"));
+
+   // Update user's watch history by adding the videoId to the watchHistory array If a video is viewed once, this video ID will be added
+   const watchHistory = await User.findByIdAndUpdate(userId, {
+      $addToSet: {
          watchHistory: videoId,
       },
    });
+   // Save the changes to the user's watch history
    await watchHistory.save();
 });
