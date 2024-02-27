@@ -25,8 +25,8 @@ exports.getChannelStats = asyncHandler(async (req, res) => {
 
    // Get total video views
    const totalVideoViews = await Video.aggregate([
-      { $match: { channel: channel._id } },
-      { $group: { _id: null, totalViews: { $sum: "$viewer" } } },
+      { $match: { owner: channel._id } },
+      { $group: { _id: null, totalViews: { $sum: "$views" } } },
    ]);
 
    // Get total subscribers
@@ -39,12 +39,12 @@ exports.getChannelStats = asyncHandler(async (req, res) => {
 
    // Get total likes
    const totalLikes = await Like.countDocuments({
-      video: { $in: channel.videos },
+      likedBy: { $in: channel._id },
    });
 
    // Get total comments
    const totalComments = await Comment.countDocuments({
-      video: { $in: channel.videos },
+      owner: { $in: channel._id },
    });
 
    // Respond with the channel stats
