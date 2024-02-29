@@ -220,8 +220,11 @@ exports.logoutUser = asyncHandler(async (req, res) => {
       .json(new apiResponse(200, "user log out successfully!"));
 });
 exports.getCurrentUser = asyncHandler(async (req, res) => {
+   const currentUser = await User.findById(req.user?._id).select(
+      "-password -createdAt -updatedAt -refreshToken"
+   );
    res.status(200).json(
-      new apiResponse(200, req.user, "successfully finding current user")
+      new apiResponse(200, currentUser, "successfully finding current user")
    );
 });
 exports.changeCurrentPassword = asyncHandler(async (req, res) => {
