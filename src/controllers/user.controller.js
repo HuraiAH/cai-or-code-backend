@@ -224,7 +224,7 @@ exports.getCurrentUser = asyncHandler(async (req, res) => {
       "-password -createdAt -updatedAt -refreshToken"
    );
    res.status(200).json(
-      new apiResponse(200, currentUser, "successfully finding current user")
+      new apiResponse(200, currentUser, "user fetched successfully")
    );
 });
 exports.changeCurrentPassword = asyncHandler(async (req, res) => {
